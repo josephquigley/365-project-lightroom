@@ -71,4 +71,18 @@ function M._blankCell(f)
   }
 end
 
+local WEEKDAY_LABELS = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" }
+
+function M._weekdayHeader(f)
+  local row = f:row { spacing = 4 }
+  for _, label in ipairs(WEEKDAY_LABELS) do
+    table.insert(row, f:static_text {
+      title = label,
+      width = CELL_SIZE,
+      alignment = "center",
+    })
+  end
+  return row
+end
+
 return M
