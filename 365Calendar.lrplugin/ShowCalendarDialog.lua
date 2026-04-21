@@ -16,6 +16,7 @@ local function currentYearMonth()
 end
 
 local function buildState(collectionValue, collectionsList, year, month, model)
+  local now = os.date("*t")
   return {
     collections     = collectionsList,
     collectionValue = collectionValue,
@@ -23,6 +24,8 @@ local function buildState(collectionValue, collectionsList, year, month, model)
     month           = month,
     cells           = model and model:cellsForMonth(year, month) or {},
     firstWeekday    = CalendarModel.firstWeekdayOfMonth(year, month),
+    todayYear       = now.year,
+    todayMonth      = now.month,
   }
 end
 
@@ -42,14 +45,13 @@ local function run()
       })
     end
 
-    local currentCollection = collections[1]
+    local currentCollection = CollectionReader.activeRegularCollection() or collections[1]
     local year, month = currentYearMonth()
     local model = CalendarModel.new(CollectionReader.loadPhotos(currentCollection))
 
     while true do
       local properties = LrBinding.makePropertyTable(context)
       properties.collectionValue = currentCollection
-      properties.action = nil
 
       local state = buildState(currentCollection, collectionsList, year, month, model)
 
@@ -58,20 +60,20 @@ local function run()
         contents = CalendarView.build(state, properties),
         actionVerb = "Close",
         cancelVerb = "< exclude >",  -- hide default Cancel
+        save_frame = "365Calendar.mainDialog",
       }
 
-      -- Handle collection change before acting on button presses.
+      -- Collection popup may have changed without closing the dialog via a button.
       if properties.collectionValue ~= currentCollection then
         currentCollection = properties.collectionValue
         model = CalendarModel.new(CollectionReader.loadPhotos(currentCollection))
       end
 
-      local action = properties.action
-      if action == "prev" then
+      if result == "prev" then
         year, month = CalendarModel.rollMonth(year, month, -1)
-      elseif action == "next" then
+      elseif result == "next" then
         year, month = CalendarModel.rollMonth(year, month, 1)
-      elseif action == "refresh" then
+      elseif result == "refresh" then
         model = CalendarModel.new(CollectionReader.loadPhotos(currentCollection))
       else
         break  -- user clicked Close or dismissed
