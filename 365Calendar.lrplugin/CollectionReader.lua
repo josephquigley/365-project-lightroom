@@ -46,4 +46,18 @@ function M.loadPhotos(collection)
   return collection:getPhotos()
 end
 
+-- Returns the first regular (non-smart) collection currently selected as a
+-- source in the Library, or nil if none is selected.
+function M.activeRegularCollection()
+  local catalog = LrApplication.activeCatalog()
+  local sources = catalog:getActiveSources() or {}
+  for _, src in ipairs(sources) do
+    if type(src) == "table" and src.type and src:type() == "LrCollection"
+       and not src:isSmartCollection() then
+      return src
+    end
+  end
+  return nil
+end
+
 return M
