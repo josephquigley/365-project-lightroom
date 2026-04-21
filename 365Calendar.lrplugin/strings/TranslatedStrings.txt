@@ -1,0 +1,2 @@
+"$$$/365Calendar/PluginName=365 Project Calendar"
+"$$$/365Calendar/MenuItem=Show 365 Calendar..."
