@@ -106,5 +106,30 @@ test("_cocoaToLocalDate: works near midnight boundary", function()
   assert_equal(d, 15)
 end)
 
+-- ---------------------------------------------------------------
+-- CalendarModel.new: binning
+-- ---------------------------------------------------------------
+
+test("new: returns an object with cellsForMonth method", function()
+  local m = CalendarModel.new({})
+  assert_equal(type(m.cellsForMonth), "function")
+end)
+
+test("new: bins a single photo into its date key", function()
+  local p = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 4, 15, 10) })
+  local m = CalendarModel.new({ p })
+  local bin = m:_binFor(2026, 4, 15)
+  assert_equal(#bin, 1)
+  assert_equal(bin[1], p)
+end)
+
+test("new: photos on different days go into separate bins", function()
+  local p1 = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 4, 15, 10) })
+  local p2 = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 4, 16, 10) })
+  local m = CalendarModel.new({ p1, p2 })
+  assert_equal(#m:_binFor(2026, 4, 15), 1)
+  assert_equal(#m:_binFor(2026, 4, 16), 1)
+end)
+
 print(string.format("\n%d passed, %d failed", passed, failed))
 os.exit(failed == 0 and 0 or 1)
