@@ -8,7 +8,11 @@ function M.new(photos)
 end
 
 function M.rollMonth(year, month, delta)
-  error("not yet implemented", 2)
+  -- Convert (year, month) into a 0-indexed month count, shift, convert back.
+  local zeroBased = (year * 12 + (month - 1)) + delta
+  local newYear = math.floor(zeroBased / 12)
+  local newMonth = (zeroBased - newYear * 12) + 1
+  return newYear, newMonth
 end
 
 return M

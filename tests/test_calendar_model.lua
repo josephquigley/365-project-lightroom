@@ -56,5 +56,33 @@ test("module exposes new and rollMonth", function()
   assert_equal(type(CalendarModel.rollMonth), "function", "rollMonth should be a function")
 end)
 
+-- ---------------------------------------------------------------
+-- rollMonth: month arithmetic with year rollover
+-- ---------------------------------------------------------------
+
+test("rollMonth: simple forward step", function()
+  local y, m = CalendarModel.rollMonth(2026, 4, 1)
+  assert_equal(y, 2026)
+  assert_equal(m, 5)
+end)
+
+test("rollMonth: simple backward step", function()
+  local y, m = CalendarModel.rollMonth(2026, 4, -1)
+  assert_equal(y, 2026)
+  assert_equal(m, 3)
+end)
+
+test("rollMonth: December forward rolls year", function()
+  local y, m = CalendarModel.rollMonth(2026, 12, 1)
+  assert_equal(y, 2027)
+  assert_equal(m, 1)
+end)
+
+test("rollMonth: January backward rolls year", function()
+  local y, m = CalendarModel.rollMonth(2026, 1, -1)
+  assert_equal(y, 2025)
+  assert_equal(m, 12)
+end)
+
 print(string.format("\n%d passed, %d failed", passed, failed))
 os.exit(failed == 0 and 0 or 1)
