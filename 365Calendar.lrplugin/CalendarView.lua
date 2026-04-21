@@ -2,22 +2,25 @@
 -- All functions are pure with respect to their inputs -- they return view
 -- descriptors, never calling LR APIs directly.
 
-local LrView  = import "LrView"
-local LrColor = import "LrColor"
+local LrView    = import "LrView"
+local LrColor   = import "LrColor"
+local LrDialogs = import "LrDialogs"
 
 local M = {}
 
 local CELL_SIZE = 80
 
 local COLOR_MISSING_BG  = LrColor(0.95, 0.85, 0.85)
-local COLOR_MISSING_FG  = LrColor(0.55, 0.25, 0.25)
+local COLOR_MISSING_FG  = LrColor(0, 0, 0)
 local COLOR_OVERLAY_FG  = LrColor(1, 1, 1)
 local COLOR_OVERLAY_BG  = LrColor(0.15, 0.15, 0.15)  -- opaque dark; LrColor alpha support is unreliable
 
 -- A present-day cell: catalog photo thumbnail with overlaid day number and
--- "+N" badge (visible only when extras > 0).
+-- "+N" badge (visible only when extras > 0). `place = "overlapping"` stacks
+-- the children at absolute positions specified by place_horizontal/vertical.
 function M._presentCell(f, cell)
-  return f:place {
+  return f:view {
+    place = "overlapping",
     width = CELL_SIZE, height = CELL_SIZE,
 
     f:catalog_photo {
@@ -73,27 +76,31 @@ end
 
 local WEEKDAY_LABELS = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" }
 
+-- LrView finalizes children at construction time -- post-hoc `table.insert`
+-- on the returned view is silently dropped. We build the args table first,
+-- then construct the view once with all children in place.
 function M._weekdayHeader(f)
-  local row = f:row { spacing = 4 }
+  local args = { spacing = 4 }
   for _, label in ipairs(WEEKDAY_LABELS) do
-    table.insert(row, f:static_text {
+    args[#args + 1] = f:static_text {
       title = label,
       width = CELL_SIZE,
       alignment = "center",
-    })
+    }
   end
-  return row
+  return f:row(args)
 end
 
 -- Builds the month grid: up to 6 rows of 7 cells each. Leading blanks
 -- account for the weekday of the 1st; trailing blanks pad the final row so
--- the grid edge stays rectangular.
+-- the grid edge stays rectangular. Children are built into args tables
+-- before the view is constructed; post-hoc table.insert on a completed
+-- LrView row/column is silently dropped.
 function M._grid(f, cells, firstWeekday)
-  local column = f:column { spacing = 4 }
-
-  local row = f:row { spacing = 4 }
+  local columnArgs = { spacing = 4 }
+  local rowArgs = { spacing = 4 }
   for _ = 1, (firstWeekday - 1) do
-    table.insert(row, M._blankCell(f))
+    rowArgs[#rowArgs + 1] = M._blankCell(f)
   end
   local inRow = firstWeekday - 1
 
@@ -104,11 +111,11 @@ function M._grid(f, cells, firstWeekday)
     else
       view = M._missingCell(f, cell)
     end
-    table.insert(row, view)
+    rowArgs[#rowArgs + 1] = view
     inRow = inRow + 1
     if inRow == 7 then
-      table.insert(column, row)
-      row = f:row { spacing = 4 }
+      columnArgs[#columnArgs + 1] = f:row(rowArgs)
+      rowArgs = { spacing = 4 }
       inRow = 0
     end
   end
@@ -116,12 +123,12 @@ function M._grid(f, cells, firstWeekday)
   -- Trailing blanks + flush partial row.
   if inRow > 0 then
     for _ = inRow + 1, 7 do
-      table.insert(row, M._blankCell(f))
+      rowArgs[#rowArgs + 1] = M._blankCell(f)
     end
-    table.insert(column, row)
+    columnArgs[#columnArgs + 1] = f:row(rowArgs)
   end
 
-  return column
+  return f:column(columnArgs)
 end
 
 local MONTH_NAMES = {
@@ -132,7 +139,8 @@ local MONTH_NAMES = {
 -- Top bar: collection picker + refresh button.
 -- `state.collections` is an array of { title, value } entries;
 -- `state.collectionValue` is the currently-selected value.
-function M._topBar(f, state, properties)
+-- `close_with(result)` closes the modal dialog with the given result string.
+function M._topBar(f, state, properties, close_with)
   return f:row {
     spacing = 8,
     f:static_text { title = "Collection:" },
@@ -143,17 +151,23 @@ function M._topBar(f, state, properties)
     },
     f:push_button {
       title = "Refresh",
-      action = function() properties.action = "refresh" end,
+      action = function() close_with("refresh") end,
     },
   }
 end
 
 -- Nav bar: prev button, centered month/year label, next button.
-function M._navBar(f, state, properties)
+-- Next is disabled once the selected month is at or past the current month,
+-- so the user cannot navigate into the future.
+function M._navBar(f, state, properties, close_with)
+  local atOrPastToday =
+    state.year > state.todayYear
+    or (state.year == state.todayYear and state.month >= state.todayMonth)
+
   return f:row {
     f:push_button {
       title = "<",
-      action = function() properties.action = "prev" end,
+      action = function() close_with("prev") end,
     },
     f:spacer { fill_horizontal = 1 },
     f:static_text {
@@ -165,7 +179,8 @@ function M._navBar(f, state, properties)
     f:spacer { fill_horizontal = 1 },
     f:push_button {
       title = ">",
-      action = function() properties.action = "next" end,
+      enabled = not atOrPastToday,
+      action = function() close_with("next") end,
     },
   }
 end
@@ -185,12 +200,21 @@ end
 -- to signal the navigation loop which transition to take.
 function M.build(state, properties)
   local f = LrView.osFactory()
-  return f:column {
+  -- Forward-declare the root view so button callbacks can reference it.
+  -- LrDialogs.stopModalWithResult needs a view that lives inside the
+  -- currently-presented modal to walk up and find the dialog; the root view
+  -- is the surest bet.
+  local root
+  local function close_with(result)
+    LrDialogs.stopModalWithResult(root, result)
+  end
+
+  root = f:column {
     spacing = 10,
     bind_to_object = properties,
 
-    M._topBar(f, state, properties),
-    M._navBar(f, state, properties),
+    M._topBar(f, state, properties, close_with),
+    M._navBar(f, state, properties, close_with),
     f:separator { fill_horizontal = 1 },
     M._weekdayHeader(f),
     f:scrolled_view {
@@ -199,6 +223,7 @@ function M.build(state, properties)
       M._grid(f, state.cells, state.firstWeekday),
     },
   }
+  return root
 end
 
 return M
