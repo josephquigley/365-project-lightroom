@@ -188,5 +188,18 @@ test("cellsForMonth: three photos same day -> primary earliest, extras=2", funct
   assert_equal(cells[15].extras, 2)
 end)
 
+-- ---------------------------------------------------------------
+-- Photos without dateTimeOriginal
+-- ---------------------------------------------------------------
+
+test("new: photos without dateTimeOriginal are skipped", function()
+  local good    = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 4, 15, 10) })
+  local missing = stubPhoto({ dateTimeOriginal = nil })
+  local m = CalendarModel.new({ good, missing })
+  local cells = m:cellsForMonth(2026, 4)
+  assert_equal(cells[15].primary, good)
+  assert_equal(cells[15].extras, 0)  -- missing did not inflate extras
+end)
+
 print(string.format("\n%d passed, %d failed", passed, failed))
 os.exit(failed == 0 and 0 or 1)
