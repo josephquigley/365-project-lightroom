@@ -26,6 +26,11 @@ function Model:_binFor(year, month, day)
 end
 
 function M.new(photos)
+  -- Bin each photo into a (year, month, day) bucket along with its cached
+  -- capture time. We cache `dto` on the bin entry so table.sort's comparator
+  -- stays pure-Lua: Lightroom metadata getters can yield, and yielding inside
+  -- the C-level table.sort raises "Yielding is not allowed within a C or
+  -- metamethod call".
   local bins = {}
   for _, photo in ipairs(photos) do
     local cs = photo:getRawMetadata("dateTimeOriginal")
@@ -33,13 +38,14 @@ function M.new(photos)
       local y, mo, d = M._cocoaToLocalDate(cs)
       local key = dayKey(y, mo, d)
       bins[key] = bins[key] or {}
-      table.insert(bins[key], photo)
+      table.insert(bins[key], { photo = photo, dto = cs })
     end
   end
-  for _, bin in pairs(bins) do
-    table.sort(bin, function(a, b)
-      return a:getRawMetadata("dateTimeOriginal") < b:getRawMetadata("dateTimeOriginal")
-    end)
+  for key, bin in pairs(bins) do
+    table.sort(bin, function(a, b) return a.dto < b.dto end)
+    local photos_only = {}
+    for i, entry in ipairs(bin) do photos_only[i] = entry.photo end
+    bins[key] = photos_only
   end
   local self = setmetatable({ _bins = bins }, Model)
   return self
