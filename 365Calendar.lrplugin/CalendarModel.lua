@@ -76,4 +76,10 @@ function Model:cellsForMonth(year, month)
   return cells
 end
 
+-- Returns the weekday of day 1 of the given month, with 1=Sunday..7=Saturday.
+function M.firstWeekdayOfMonth(year, month)
+  local t = os.date("*t", os.time({ year = year, month = month, day = 1, hour = 12 }))
+  return t.wday  -- os.date already uses 1=Sun..7=Sat
+end
+
 return M

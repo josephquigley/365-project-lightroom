@@ -217,5 +217,17 @@ test("cellsForMonth: February 2025 has 28 cells", function()
   assert_equal(#cells, 28)
 end)
 
+-- ---------------------------------------------------------------
+-- firstWeekdayOfMonth: 1=Sunday..7=Saturday
+-- ---------------------------------------------------------------
+
+test("firstWeekdayOfMonth: April 2026 starts on Wednesday (4)", function()
+  assert_equal(CalendarModel.firstWeekdayOfMonth(2026, 4), 4)
+end)
+
+test("firstWeekdayOfMonth: February 2026 starts on Sunday (1)", function()
+  assert_equal(CalendarModel.firstWeekdayOfMonth(2026, 2), 1)
+end)
+
 print(string.format("\n%d passed, %d failed", passed, failed))
 os.exit(failed == 0 and 0 or 1)
