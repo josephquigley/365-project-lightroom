@@ -85,4 +85,43 @@ function M._weekdayHeader(f)
   return row
 end
 
+-- Builds the month grid: up to 6 rows of 7 cells each. Leading blanks
+-- account for the weekday of the 1st; trailing blanks pad the final row so
+-- the grid edge stays rectangular.
+function M._grid(f, cells, firstWeekday)
+  local column = f:column { spacing = 4 }
+
+  local row = f:row { spacing = 4 }
+  for _ = 1, (firstWeekday - 1) do
+    table.insert(row, M._blankCell(f))
+  end
+  local inRow = firstWeekday - 1
+
+  for _, cell in ipairs(cells) do
+    local view
+    if cell.primary then
+      view = M._presentCell(f, cell)
+    else
+      view = M._missingCell(f, cell)
+    end
+    table.insert(row, view)
+    inRow = inRow + 1
+    if inRow == 7 then
+      table.insert(column, row)
+      row = f:row { spacing = 4 }
+      inRow = 0
+    end
+  end
+
+  -- Trailing blanks + flush partial row.
+  if inRow > 0 then
+    for _ = inRow + 1, 7 do
+      table.insert(row, M._blankCell(f))
+    end
+    table.insert(column, row)
+  end
+
+  return column
+end
+
 return M
