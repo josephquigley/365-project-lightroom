@@ -48,8 +48,27 @@ function M.rollMonth(year, month, delta)
   return newYear, newMonth
 end
 
+-- Returns the number of days in the given (year, month) using os.time/os.date.
+-- Trick: day 0 of month+1 is the last day of month.
+local function daysInMonth(year, month)
+  local nextMonth, nextYear = month + 1, year
+  if nextMonth > 12 then nextMonth, nextYear = 1, year + 1 end
+  local t = os.date("*t", os.time({ year = nextYear, month = nextMonth, day = 0, hour = 12 }))
+  return t.day
+end
+
 function Model:cellsForMonth(year, month)
-  error("not yet implemented", 2)
+  local n = daysInMonth(year, month)
+  local cells = {}
+  for day = 1, n do
+    local bin = self:_binFor(year, month, day)
+    cells[day] = {
+      day     = day,
+      primary = bin[1],
+      extras  = math.max(#bin - 1, 0),
+    }
+  end
+  return cells
 end
 
 return M

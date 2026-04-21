@@ -131,5 +131,47 @@ test("new: photos on different days go into separate bins", function()
   assert_equal(#m:_binFor(2026, 4, 16), 1)
 end)
 
+-- ---------------------------------------------------------------
+-- cellsForMonth: shape + simple cases
+-- ---------------------------------------------------------------
+
+test("cellsForMonth: April has 30 cells", function()
+  local m = CalendarModel.new({})
+  local cells = m:cellsForMonth(2026, 4)
+  assert_equal(#cells, 30)
+end)
+
+test("cellsForMonth: July has 31 cells", function()
+  local m = CalendarModel.new({})
+  local cells = m:cellsForMonth(2026, 7)
+  assert_equal(#cells, 31)
+end)
+
+test("cellsForMonth: cells have day, primary, extras fields", function()
+  local m = CalendarModel.new({})
+  local cells = m:cellsForMonth(2026, 4)
+  assert_equal(cells[1].day, 1)
+  assert_equal(cells[15].day, 15)
+  assert_nil(cells[1].primary)
+  assert_equal(cells[1].extras, 0)
+end)
+
+test("cellsForMonth: single photo becomes primary of that day", function()
+  local p = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 4, 15, 10) })
+  local m = CalendarModel.new({ p })
+  local cells = m:cellsForMonth(2026, 4)
+  assert_equal(cells[15].primary, p)
+  assert_equal(cells[15].extras, 0)
+end)
+
+test("cellsForMonth: photos outside month do not appear", function()
+  local p = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 3, 31, 10) })
+  local m = CalendarModel.new({ p })
+  local cells = m:cellsForMonth(2026, 4)
+  for _, c in ipairs(cells) do
+    assert_nil(c.primary)
+  end
+end)
+
 print(string.format("\n%d passed, %d failed", passed, failed))
 os.exit(failed == 0 and 0 or 1)
