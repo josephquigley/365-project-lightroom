@@ -201,5 +201,21 @@ test("new: photos without dateTimeOriginal are skipped", function()
   assert_equal(cells[15].extras, 0)  -- missing did not inflate extras
 end)
 
+-- ---------------------------------------------------------------
+-- Leap February
+-- ---------------------------------------------------------------
+
+test("cellsForMonth: February 2024 has 29 cells (leap year)", function()
+  local m = CalendarModel.new({})
+  local cells = m:cellsForMonth(2024, 2)
+  assert_equal(#cells, 29)
+end)
+
+test("cellsForMonth: February 2025 has 28 cells", function()
+  local m = CalendarModel.new({})
+  local cells = m:cellsForMonth(2025, 2)
+  assert_equal(#cells, 28)
+end)
+
 print(string.format("\n%d passed, %d failed", passed, failed))
 os.exit(failed == 0 and 0 or 1)
