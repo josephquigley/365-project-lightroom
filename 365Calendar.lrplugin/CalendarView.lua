@@ -124,4 +124,50 @@ function M._grid(f, cells, firstWeekday)
   return column
 end
 
+local MONTH_NAMES = {
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+}
+
+-- Top bar: collection picker + refresh button.
+-- `state.collections` is an array of { title, value } entries;
+-- `state.collectionValue` is the currently-selected value.
+function M._topBar(f, state, properties)
+  return f:row {
+    spacing = 8,
+    f:static_text { title = "Collection:" },
+    f:popup_menu {
+      items = state.collections,
+      value = LrView.bind { key = "collectionValue", object = properties },
+      width_in_chars = 30,
+    },
+    f:push_button {
+      title = "Refresh",
+      action = function() properties.action = "refresh" end,
+    },
+  }
+end
+
+-- Nav bar: prev button, centered month/year label, next button.
+function M._navBar(f, state, properties)
+  return f:row {
+    f:push_button {
+      title = "<",
+      action = function() properties.action = "prev" end,
+    },
+    f:spacer { fill_horizontal = 1 },
+    f:static_text {
+      title = MONTH_NAMES[state.month] .. " " .. tostring(state.year),
+      font = "<system/bold>",
+      alignment = "center",
+      width_in_chars = 20,
+    },
+    f:spacer { fill_horizontal = 1 },
+    f:push_button {
+      title = ">",
+      action = function() properties.action = "next" end,
+    },
+  }
+end
+
 return M
