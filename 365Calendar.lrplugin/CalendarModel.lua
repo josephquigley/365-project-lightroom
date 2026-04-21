@@ -36,6 +36,11 @@ function M.new(photos)
       table.insert(bins[key], photo)
     end
   end
+  for _, bin in pairs(bins) do
+    table.sort(bin, function(a, b)
+      return a:getRawMetadata("dateTimeOriginal") < b:getRawMetadata("dateTimeOriginal")
+    end)
+  end
   local self = setmetatable({ _bins = bins }, Model)
   return self
 end

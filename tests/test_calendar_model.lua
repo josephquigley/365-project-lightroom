@@ -173,5 +173,20 @@ test("cellsForMonth: photos outside month do not appear", function()
   end
 end)
 
+-- ---------------------------------------------------------------
+-- cellsForMonth: multi-photo days
+-- ---------------------------------------------------------------
+
+test("cellsForMonth: three photos same day -> primary earliest, extras=2", function()
+  local morning = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 4, 15, 8) })
+  local noon    = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 4, 15, 12) })
+  local evening = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 4, 15, 20) })
+  -- Pass in arbitrary order to confirm sorting.
+  local m = CalendarModel.new({ evening, morning, noon })
+  local cells = m:cellsForMonth(2026, 4)
+  assert_equal(cells[15].primary, morning)
+  assert_equal(cells[15].extras, 2)
+end)
+
 print(string.format("\n%d passed, %d failed", passed, failed))
 os.exit(failed == 0 and 0 or 1)
