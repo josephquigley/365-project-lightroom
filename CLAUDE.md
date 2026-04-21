@@ -68,6 +68,38 @@ must pass before commits that touch `CalendarModel.lua`.
 ## LrSDK references
 
 Consult the Lightroom Classic SDK Programmer's Guide for `LrView` primitives
-(`f:place`, `f:row`, `f:column`, `f:popup_menu`, `f:catalog_photo`,
-`f:static_text`, `f:push_button`, `f:view`, `f:scrolled_view`) and
-`LrDialogs.presentModalDialog` mechanics.
+(`f:row`, `f:column`, `f:popup_menu`, `f:catalog_photo`, `f:static_text`,
+`f:push_button`, `f:view`, `f:scrolled_view`) and `LrDialogs.presentModalDialog`
+mechanics. Note: `f:place` is not a primitive — use
+`f:view { place = "overlapping" }` for stacked layouts.
+
+## Verified behavior (as of 2026-04-21)
+
+Smoke-tested against Lightroom Classic on macOS:
+
+- Plugin installs via `Plug-in Manager > Add` pointing at the repo's
+  `365Calendar.lrplugin` directory.
+- `Library > Plug-in Extras > Show 365 Calendar` opens the dialog.
+- Month grid renders with thumbnails on days with photos and soft-red tinted
+  cells on days without.
+- `<` / `>` navigate by month; `>` is disabled once the current calendar
+  month is reached.
+- The Refresh button reloads the selected collection.
+- Window position is persisted across the close-and-re-open cycles used for
+  month navigation (`save_frame = "365Calendar.mainDialog"`).
+- The dialog opens on the catalog's currently-selected non-smart collection,
+  falling back to the first regular collection if none is selected.
+
+Known gotchas encountered during smoke testing (see commit history for
+fixes):
+
+- `TranslatedStrings.txt` must be UTF-16 LE with BOM for `LOC` lookups to
+  resolve. Until the file is re-encoded, the menu title and other user-visible
+  strings are plain literals.
+- `table.sort` comparators that call `photo:getRawMetadata` raise "Yielding
+  is not allowed within a C or metamethod call" — cache yield-capable values
+  before sorting.
+- `table.insert` into a completed `f:row` / `f:column` is silently dropped.
+  Build children arrays before constructing the container.
+- `LrDialogs.stopModalWithResult`'s first argument must be a view inside the
+  currently-presented dialog hierarchy.
