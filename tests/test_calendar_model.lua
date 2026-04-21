@@ -84,5 +84,27 @@ test("rollMonth: January backward rolls year", function()
   assert_equal(m, 12)
 end)
 
+-- ---------------------------------------------------------------
+-- _cocoaToLocalDate
+-- ---------------------------------------------------------------
+
+test("_cocoaToLocalDate: round-trips a known local date", function()
+  -- Build a Cocoa-seconds value for 2026-04-21 12:00:00 local, then convert.
+  local cs = cocoaAt(2026, 4, 21, 12)
+  local y, mo, d = CalendarModel._cocoaToLocalDate(cs)
+  assert_equal(y, 2026)
+  assert_equal(mo, 4)
+  assert_equal(d, 21)
+end)
+
+test("_cocoaToLocalDate: works near midnight boundary", function()
+  -- 23:30 local on the 15th must stay on the 15th.
+  local cs = cocoaAt(2026, 4, 15, 23, 30, 0)
+  local y, mo, d = CalendarModel._cocoaToLocalDate(cs)
+  assert_equal(y, 2026)
+  assert_equal(mo, 4)
+  assert_equal(d, 15)
+end)
+
 print(string.format("\n%d passed, %d failed", passed, failed))
 os.exit(failed == 0 and 0 or 1)

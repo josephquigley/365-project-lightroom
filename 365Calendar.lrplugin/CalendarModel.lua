@@ -3,6 +3,17 @@
 
 local M = {}
 
+-- Cocoa epoch (2001-01-01 UTC) offset from Unix epoch (1970-01-01 UTC).
+local COCOA_UNIX_OFFSET = 978307200
+
+-- Convert Cocoa-epoch seconds (as returned by
+-- `photo:getRawMetadata("dateTimeOriginal")`) to a local calendar (year, month, day).
+function M._cocoaToLocalDate(cocoaSeconds)
+  local unix = cocoaSeconds + COCOA_UNIX_OFFSET
+  local t = os.date("*t", unix)
+  return t.year, t.month, t.day
+end
+
 function M.new(photos)
   error("not yet implemented", 2)
 end
