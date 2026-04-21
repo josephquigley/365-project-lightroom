@@ -170,4 +170,35 @@ function M._navBar(f, state, properties)
   }
 end
 
+-- Builds the complete dialog contents for a single month render.
+--
+-- `state` shape: {
+--   collections     = { { title = string, value = LrCollection }, ... },
+--   collectionValue = <LrCollection currently selected>,
+--   year            = integer,
+--   month           = 1..12,
+--   cells           = array of { day, primary, extras } for this month,
+--   firstWeekday    = 1..7 (1 = Sunday),
+-- }
+--
+-- `properties` is an LrBinding property table; buttons mutate `properties.action`
+-- to signal the navigation loop which transition to take.
+function M.build(state, properties)
+  local f = LrView.osFactory()
+  return f:column {
+    spacing = 10,
+    bind_to_object = properties,
+
+    M._topBar(f, state, properties),
+    M._navBar(f, state, properties),
+    f:separator { fill_horizontal = 1 },
+    M._weekdayHeader(f),
+    f:scrolled_view {
+      width = (CELL_SIZE + 4) * 7 + 20,
+      height = (CELL_SIZE + 4) * 6 + 20,
+      M._grid(f, state.cells, state.firstWeekday),
+    },
+  }
+end
+
 return M
