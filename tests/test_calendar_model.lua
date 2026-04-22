@@ -229,5 +229,55 @@ test("firstWeekdayOfMonth: February 2026 starts on Sunday (1)", function()
   assert_equal(CalendarModel.firstWeekdayOfMonth(2026, 2), 1)
 end)
 
+-- ---------------------------------------------------------------
+-- project_day: 365-Project day number, day 1 = earliest photo
+-- ---------------------------------------------------------------
+
+test("cellsForMonth: project_day = 1 on the day of the earliest photo", function()
+  local p = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 1, 1, 10) })
+  local m = CalendarModel.new({ p })
+  local cells = m:cellsForMonth(2026, 1)
+  assert_equal(cells[1].project_day, 1)
+end)
+
+test("cellsForMonth: project_day = 3 for a photo two days after start", function()
+  local p1 = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 1, 1, 10) })
+  local p3 = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 1, 3, 10) })
+  local m = CalendarModel.new({ p1, p3 })
+  local cells = m:cellsForMonth(2026, 1)
+  assert_equal(cells[3].project_day, 3)
+end)
+
+test("cellsForMonth: earliest photo anchors the count regardless of input order", function()
+  local later   = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 3, 15, 10) })
+  local earlier = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 1, 1, 10) })
+  local m = CalendarModel.new({ later, earlier })
+  local cells = m:cellsForMonth(2026, 3)
+  -- March 15 = 31 (Jan) + 28 (Feb) + 15 = day 74 from Jan 1
+  assert_equal(cells[15].project_day, 74)
+end)
+
+test("cellsForMonth: project_day spans month boundary correctly", function()
+  -- Earliest on Jan 30, photo on Feb 1 -> day 3
+  local p1 = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 1, 30, 10) })
+  local p3 = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 2, 1, 10) })
+  local m = CalendarModel.new({ p1, p3 })
+  local cells = m:cellsForMonth(2026, 2)
+  assert_equal(cells[1].project_day, 3)
+end)
+
+test("cellsForMonth: missing days carry no project_day", function()
+  local p = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 1, 1, 10) })
+  local m = CalendarModel.new({ p })
+  local cells = m:cellsForMonth(2026, 1)
+  assert_nil(cells[2].project_day)
+end)
+
+test("cellsForMonth: empty model leaves project_day nil", function()
+  local m = CalendarModel.new({})
+  local cells = m:cellsForMonth(2026, 4)
+  assert_nil(cells[1].project_day)
+end)
+
 print(string.format("\n%d passed, %d failed", passed, failed))
 os.exit(failed == 0 and 0 or 1)

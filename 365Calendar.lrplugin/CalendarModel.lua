@@ -30,8 +30,10 @@ function M.new(photos)
   -- capture time. We cache `dto` on the bin entry so table.sort's comparator
   -- stays pure-Lua: Lightroom metadata getters can yield, and yielding inside
   -- the C-level table.sort raises "Yielding is not allowed within a C or
-  -- metamethod call".
+  -- metamethod call". The earliest capture time is also remembered as the
+  -- 365-project start date anchor for project_day numbering.
   local bins = {}
+  local min_dto = nil
   for _, photo in ipairs(photos) do
     local cs = photo:getRawMetadata("dateTimeOriginal")
     if cs then
@@ -39,6 +41,7 @@ function M.new(photos)
       local key = dayKey(y, mo, d)
       bins[key] = bins[key] or {}
       table.insert(bins[key], { photo = photo, dto = cs })
+      if min_dto == nil or cs < min_dto then min_dto = cs end
     end
   end
   for key, bin in pairs(bins) do
@@ -47,7 +50,12 @@ function M.new(photos)
     for i, entry in ipairs(bin) do photos_only[i] = entry.photo end
     bins[key] = photos_only
   end
-  local self = setmetatable({ _bins = bins }, Model)
+  local start = nil
+  if min_dto then
+    local sy, sm, sd = M._cocoaToLocalDate(min_dto)
+    start = { year = sy, month = sm, day = sd }
+  end
+  local self = setmetatable({ _bins = bins, _start = start }, Model)
   return self
 end
 
@@ -68,15 +76,29 @@ local function daysInMonth(year, month)
   return t.day
 end
 
+-- Returns the number of whole days between two local dates, anchored at
+-- local noon to sidestep DST seams.
+local function daysBetween(a, b)
+  local ta = os.time({ year = a.year, month = a.month, day = a.day, hour = 12 })
+  local tb = os.time({ year = b.year, month = b.month, day = b.day, hour = 12 })
+  return math.floor((tb - ta) / 86400 + 0.5)
+end
+
 function Model:cellsForMonth(year, month)
   local n = daysInMonth(year, month)
   local cells = {}
   for day = 1, n do
     local bin = self:_binFor(year, month, day)
+    local primary = bin[1]
+    local project_day = nil
+    if primary and self._start then
+      project_day = daysBetween(self._start, { year = year, month = month, day = day }) + 1
+    end
     cells[day] = {
-      day     = day,
-      primary = bin[1],
-      extras  = math.max(#bin - 1, 0),
+      day         = day,
+      primary     = primary,
+      extras      = math.max(#bin - 1, 0),
+      project_day = project_day,
     }
   end
   return cells
