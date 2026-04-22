@@ -11,7 +11,6 @@ or touch code for them without explicit user request:
 
 - Lightroom CC / Cloud plugin surface (no equivalent API; not supported)
 - Direct `.lrcat` SQLite reading
-- macOS / iOS companion apps
 - Smart-collection support
 - Quarter-view and year-view calendar layouts
 - Click interactions on calendar cells
