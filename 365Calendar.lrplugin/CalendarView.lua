@@ -18,59 +18,89 @@ local COLOR_OVERLAY_BG  = LrColor(0.15, 0.15, 0.15)  -- opaque dark; LrColor alp
 -- A present-day cell: catalog photo thumbnail with overlaid day number and
 -- "+N" badge (visible only when extras > 0). `place = "overlapping"` stacks
 -- the children at absolute positions specified by place_horizontal/vertical.
+-- Below the thumbnail, render the 365-project day number ("Day N") so the
+-- photographer can see progress at a glance.
 function M._presentCell(f, cell)
-  return f:view {
-    place = "overlapping",
-    width = CELL_SIZE, height = CELL_SIZE,
-
-    f:catalog_photo {
-      photo = cell.primary,
+  return f:column {
+    spacing = 2,
+    f:view {
+      place = "overlapping",
       width = CELL_SIZE, height = CELL_SIZE,
-    },
 
-    f:view {
-      background_color = COLOR_OVERLAY_BG,
-      place_horizontal = 0,
-      place_vertical = 0,
-      f:static_text {
-        title = tostring(cell.day),
-        text_color = COLOR_OVERLAY_FG,
-        font = "<system/small/bold>",
+      f:catalog_photo {
+        photo = cell.primary,
+        width = CELL_SIZE, height = CELL_SIZE,
+      },
+
+      f:view {
+        background_color = COLOR_OVERLAY_BG,
+        place_horizontal = 0,
+        place_vertical = 0,
+        f:static_text {
+          title = tostring(cell.day),
+          text_color = COLOR_OVERLAY_FG,
+          font = "<system/small/bold>",
+        },
+      },
+
+      f:view {
+        background_color = COLOR_OVERLAY_BG,
+        place_horizontal = 1,
+        place_vertical = 0,
+        visible = cell.extras > 0,
+        f:static_text {
+          title = "+" .. tostring(cell.extras),
+          text_color = COLOR_OVERLAY_FG,
+          font = "<system/small>",
+        },
       },
     },
-
-    f:view {
-      background_color = COLOR_OVERLAY_BG,
-      place_horizontal = 1,
-      place_vertical = 0,
-      visible = cell.extras > 0,
-      f:static_text {
-        title = "+" .. tostring(cell.extras),
-        text_color = COLOR_OVERLAY_FG,
-        font = "<system/small>",
-      },
+    f:static_text {
+      title = cell.project_day and ("Day " .. tostring(cell.project_day)) or "",
+      width = CELL_SIZE,
+      alignment = "center",
+      font = "<system/small>",
     },
   }
 end
 
--- A missing-day cell: soft-red filled box with centered day number.
+-- A missing-day cell: soft-red filled box with centered day number. Matches
+-- the present-cell's total footprint (thumbnail + day-label line) so the
+-- grid stays uniform.
 function M._missingCell(f, cell)
-  return f:view {
-    width = CELL_SIZE, height = CELL_SIZE,
-    background_color = COLOR_MISSING_BG,
+  return f:column {
+    spacing = 2,
+    f:view {
+      width = CELL_SIZE, height = CELL_SIZE,
+      background_color = COLOR_MISSING_BG,
+      f:static_text {
+        title = tostring(cell.day),
+        text_color = COLOR_MISSING_FG,
+        place_horizontal = 0.5,
+        place_vertical = 0.5,
+      },
+    },
     f:static_text {
-      title = tostring(cell.day),
-      text_color = COLOR_MISSING_FG,
-      place_horizontal = 0.5,
-      place_vertical = 0.5,
+      title = "",
+      width = CELL_SIZE,
+      alignment = "center",
+      font = "<system/small>",
     },
   }
 end
 
 -- A blank cell: used for leading/trailing spacer slots to align the grid.
+-- Size must match present/missing cells so the grid stays rectangular.
 function M._blankCell(f)
-  return f:view {
-    width = CELL_SIZE, height = CELL_SIZE,
+  return f:column {
+    spacing = 2,
+    f:view { width = CELL_SIZE, height = CELL_SIZE },
+    f:static_text {
+      title = "",
+      width = CELL_SIZE,
+      alignment = "center",
+      font = "<system/small>",
+    },
   }
 end
 
@@ -218,8 +248,10 @@ function M.build(state, properties)
     f:separator { fill_horizontal = 1 },
     M._weekdayHeader(f),
     f:scrolled_view {
+      -- Cells now include a "Day N" label beneath the thumbnail, so the
+      -- vertical footprint grows by ~24px per row (label + spacing).
       width = (CELL_SIZE + 4) * 7 + 20,
-      height = (CELL_SIZE + 4) * 6 + 20,
+      height = (CELL_SIZE + 28) * 6 + 20,
       M._grid(f, state.cells, state.firstWeekday),
     },
   }
