@@ -294,5 +294,23 @@ test("projectDayOf: 1 when today equals the earliest-photo date", function()
   assert_equal(m:projectDayOf({ year = 2026, month = 4, day = 15 }), 1)
 end)
 
+test("projectDayOf: returns N+1 when today is N days after the earliest photo", function()
+  local p = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 4, 15, 10) })
+  local m = CalendarModel.new({ p })
+  assert_equal(m:projectDayOf({ year = 2026, month = 4, day = 20 }), 6)
+end)
+
+test("projectDayOf: spans month boundaries", function()
+  local p = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 1, 30, 10) })
+  local m = CalendarModel.new({ p })
+  assert_equal(m:projectDayOf({ year = 2026, month = 2, day = 2 }), 4)
+end)
+
+test("projectDayOf: negative when today precedes the earliest photo", function()
+  local p = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 4, 15, 10) })
+  local m = CalendarModel.new({ p })
+  assert_equal(m:projectDayOf({ year = 2026, month = 4, day = 12 }), -2)
+end)
+
 print(string.format("\n%d passed, %d failed", passed, failed))
 os.exit(failed == 0 and 0 or 1)
