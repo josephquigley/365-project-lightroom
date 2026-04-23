@@ -288,5 +288,11 @@ test("projectDayOf: nil when the model has no photos", function()
   assert_nil(m:projectDayOf({ year = 2026, month = 4, day = 22 }))
 end)
 
+test("projectDayOf: 1 when today equals the earliest-photo date", function()
+  local p = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 4, 15, 10) })
+  local m = CalendarModel.new({ p })
+  assert_equal(m:projectDayOf({ year = 2026, month = 4, day = 15 }), 1)
+end)
+
 print(string.format("\n%d passed, %d failed", passed, failed))
 os.exit(failed == 0 and 0 or 1)

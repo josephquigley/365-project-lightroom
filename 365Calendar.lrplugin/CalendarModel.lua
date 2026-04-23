@@ -25,11 +25,6 @@ function Model:_binFor(year, month, day)
   return self._bins[dayKey(year, month, day)] or {}
 end
 
-function Model:projectDayOf(today)
-  if not self._start then return nil end
-  return nil
-end
-
 function M.new(photos)
   -- Bin each photo into a (year, month, day) bucket along with its cached
   -- capture time. We cache `dto` on the bin entry so table.sort's comparator
@@ -87,6 +82,11 @@ local function daysBetween(a, b)
   local ta = os.time({ year = a.year, month = a.month, day = a.day, hour = 12 })
   local tb = os.time({ year = b.year, month = b.month, day = b.day, hour = 12 })
   return math.floor((tb - ta) / 86400 + 0.5)
+end
+
+function Model:projectDayOf(today)
+  if not self._start then return nil end
+  return daysBetween(self._start, today) + 1
 end
 
 function Model:cellsForMonth(year, month)
