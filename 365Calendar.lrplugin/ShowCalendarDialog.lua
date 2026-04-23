@@ -45,21 +45,21 @@ end
 
 local function run()
   LrFunctionContext.callWithContext("365Calendar.dialog", function(context)
-    local collections = CollectionReader.listRegularCollections()
+    local collections = CollectionReader.listCollections()
     if #collections == 0 then
-      LrDialogs.message("365 Calendar", "No regular collections found in this catalog.", "info")
+      LrDialogs.message("365 Calendar", "No collections found in this catalog.", "info")
       return
     end
 
     local collectionsList = {}
     for _, c in ipairs(collections) do
       table.insert(collectionsList, {
-        title = CollectionReader.qualifiedName(c),
+        title = CollectionReader.displayLabel(c),
         value = c,
       })
     end
 
-    local currentCollection = CollectionReader.activeRegularCollection() or collections[1]
+    local currentCollection = CollectionReader.activeCollection() or collections[1]
     local year, month = currentYearMonth()
     local viewMode = "calendar"
     local model = CalendarModel.new(CollectionReader.loadPhotos(currentCollection))

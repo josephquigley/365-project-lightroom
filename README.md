@@ -18,18 +18,19 @@ days at a glance.
 
 ## Use
 
-1. In the Library module, select the collection you want to view — either
-   pick it in the Collections panel in the left-hand inspector before
-   opening the plugin, or switch to it later from the dropdown in the
-   plugin's top bar. Selecting from the inspector is often quicker for
-   nested collections.
+1. In the Library module, select the collection you want to view —
+   regular or smart. Pick it in the Collections panel in the left-hand
+   inspector before opening the plugin, or switch to it later from the
+   dropdown in the plugin's top bar. Smart collections appear in the
+   dropdown with a trailing `[smart]` marker; selecting from the
+   inspector is often quicker for nested collections.
 2. `Library > Plug-in Extras > Show 365 Calendar`. The dialog opens on
    whatever collection is currently selected in the inspector (falling
-   back to the first regular collection if none is).
+   back to the first collection if none is).
 3. Navigate months with `<` / `>`. `Refresh` reloads the active collection.
 
-Smart collections, quarter-view and year-view layouts, and click interactions
-on cells are not supported — see `CLAUDE.md` for scope.
+Quarter-view and year-view layouts, and click interactions on cells,
+are not supported — see `CLAUDE.md` for scope.
 
 ## Develop
 
