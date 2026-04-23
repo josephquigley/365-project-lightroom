@@ -45,8 +45,9 @@ label counting from the collection's earliest photo. Navigate with `<`
 
 Click `Missing` to swap the grid for a chronological list of every
 date without a photo between your earliest photo and today. Entries
-are grouped under a bold year heading and formatted `MMM D (Day N)`,
-with a `N missing` count at the top.
+are grouped under a bold year heading; each row shows the month and
+day with the project day in parentheses — for example, `Feb 18 (Day
+56)`. A count of missing days sits at the top of the list.
 
 <img src="img/365%20Project%20LR%20Plugin%20Missing.jpeg" alt="Missing view listing dates without photos grouped by year" width="520">
 
