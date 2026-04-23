@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [Unreleased]
+
+## [1.2.0] - 2026-04-23
 
 ### Added
 
@@ -46,5 +48,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Dialog window position persisted across close/re-open cycles.
 - `scripts/build.sh` plus a GitHub Actions release workflow that publishes `365Calendar-<version>.lrplugin.zip` when a version tag is pushed.
 
+[Unreleased]: https://github.com/josephquigley/365-project-lightroom/compare/1.2.0...main
+[1.2.0]: https://github.com/josephquigley/365-project-lightroom/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/josephquigley/365-project-lightroom/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/josephquigley/365-project-lightroom/releases/tag/1.0.0
