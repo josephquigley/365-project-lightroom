@@ -89,6 +89,11 @@ function Model:projectDayOf(today)
   return daysBetween(self._start, today) + 1
 end
 
+function Model:missingDays(today)
+  if not self._start then return {} end
+  return {}
+end
+
 function Model:cellsForMonth(year, month)
   local n = daysInMonth(year, month)
   local cells = {}

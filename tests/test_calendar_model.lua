@@ -312,5 +312,16 @@ test("projectDayOf: negative when today precedes the earliest photo", function()
   assert_equal(m:projectDayOf({ year = 2026, month = 4, day = 12 }), -2)
 end)
 
+-- ---------------------------------------------------------------
+-- missingDays(today): ordered list of dates without a photo
+-- ---------------------------------------------------------------
+
+test("missingDays: empty model returns empty list", function()
+  local m = CalendarModel.new({})
+  local result = m:missingDays({ year = 2026, month = 4, day = 22 })
+  assert_equal(type(result), "table")
+  assert_equal(#result, 0)
+end)
+
 print(string.format("\n%d passed, %d failed", passed, failed))
 os.exit(failed == 0 and 0 or 1)
