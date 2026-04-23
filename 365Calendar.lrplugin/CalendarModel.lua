@@ -84,6 +84,37 @@ local function daysBetween(a, b)
   return math.floor((tb - ta) / 86400 + 0.5)
 end
 
+function Model:projectDayOf(today)
+  if not self._start then return nil end
+  return daysBetween(self._start, today) + 1
+end
+
+function Model:missingDays(today)
+  if not self._start then return {} end
+  local span = daysBetween(self._start, today)
+  if span < 0 then return {} end
+
+  local out = {}
+  for offset = 0, span do
+    local t = os.date("*t", os.time({
+      year = self._start.year,
+      month = self._start.month,
+      day = self._start.day + offset,
+      hour = 12,
+    }))
+    local key = string.format("%04d-%02d-%02d", t.year, t.month, t.day)
+    if not self._bins[key] then
+      out[#out + 1] = {
+        year        = t.year,
+        month       = t.month,
+        day         = t.day,
+        project_day = offset + 1,
+      }
+    end
+  end
+  return out
+end
+
 function Model:cellsForMonth(year, month)
   local n = daysInMonth(year, month)
   local cells = {}

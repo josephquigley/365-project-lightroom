@@ -15,18 +15,32 @@ local function currentYearMonth()
   return t.year, t.month
 end
 
-local function buildState(collectionValue, collectionsList, year, month, model)
-  local now = os.date("*t")
-  return {
-    collections     = collectionsList,
-    collectionValue = collectionValue,
-    year            = year,
-    month           = month,
-    cells           = model and model:cellsForMonth(year, month) or {},
-    firstWeekday    = CalendarModel.firstWeekdayOfMonth(year, month),
-    todayYear       = now.year,
-    todayMonth      = now.month,
+local function currentDate()
+  local t = os.date("*t")
+  return { year = t.year, month = t.month, day = t.day }
+end
+
+local function buildState(collectionValue, collectionsList, view, year, month, model)
+  local today = currentDate()
+  local now   = os.date("*t")
+  local state = {
+    collections      = collectionsList,
+    collectionValue  = collectionValue,
+    view             = view,
+    today            = today,
+    todayProjectDay  = model and model:projectDayOf(today) or nil,
+    todayYear        = now.year,
+    todayMonth       = now.month,
   }
+  if view == "missing" then
+    state.missingDays = model and model:missingDays(today) or {}
+  else
+    state.year         = year
+    state.month        = month
+    state.cells        = model and model:cellsForMonth(year, month) or {}
+    state.firstWeekday = CalendarModel.firstWeekdayOfMonth(year, month)
+  end
+  return state
 end
 
 local function run()
@@ -47,17 +61,18 @@ local function run()
 
     local currentCollection = CollectionReader.activeRegularCollection() or collections[1]
     local year, month = currentYearMonth()
+    local viewMode = "calendar"
     local model = CalendarModel.new(CollectionReader.loadPhotos(currentCollection))
 
     while true do
       local properties = LrBinding.makePropertyTable(context)
       properties.collectionValue = currentCollection
 
-      local state = buildState(currentCollection, collectionsList, year, month, model)
+      local state = buildState(currentCollection, collectionsList, viewMode, year, month, model)
 
       local result = LrDialogs.presentModalDialog {
-        title  = "365 Project Calendar",
-        contents = CalendarView.build(state, properties),
+        title      = "365 Project Calendar",
+        contents   = CalendarView.build(state, properties),
         actionVerb = "Close",
         cancelVerb = "< exclude >",  -- hide default Cancel
         save_frame = "365Calendar.mainDialog",
@@ -75,6 +90,10 @@ local function run()
         year, month = CalendarModel.rollMonth(year, month, 1)
       elseif result == "refresh" then
         model = CalendarModel.new(CollectionReader.loadPhotos(currentCollection))
+      elseif result == "view:calendar" then
+        viewMode = "calendar"
+      elseif result == "view:missing" then
+        viewMode = "missing"
       else
         break  -- user clicked Close or dismissed
       end
