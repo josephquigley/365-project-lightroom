@@ -25,6 +25,11 @@ function Model:_binFor(year, month, day)
   return self._bins[dayKey(year, month, day)] or {}
 end
 
+function Model:projectDayOf(today)
+  if not self._start then return nil end
+  return nil
+end
+
 function M.new(photos)
   -- Bin each photo into a (year, month, day) bucket along with its cached
   -- capture time. We cache `dto` on the bin entry so table.sort's comparator
