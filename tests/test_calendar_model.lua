@@ -323,5 +323,12 @@ test("missingDays: empty model returns empty list", function()
   assert_equal(#result, 0)
 end)
 
+test("missingDays: empty list when today precedes the earliest photo", function()
+  local p = stubPhoto({ dateTimeOriginal = cocoaAt(2026, 4, 15, 10) })
+  local m = CalendarModel.new({ p })
+  local result = m:missingDays({ year = 2026, month = 4, day = 10 })
+  assert_equal(#result, 0)
+end)
+
 print(string.format("\n%d passed, %d failed", passed, failed))
 os.exit(failed == 0 and 0 or 1)
