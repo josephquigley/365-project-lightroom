@@ -346,14 +346,16 @@ function M.build(state, properties)
   end
 
   -- Natural width of the 7-column grid (7 cells + 6 inter-cell gaps).
-  -- The scrolled view needs extra horizontal padding for its scrollbar
-  -- gutter; without it a vertical scrollbar steals from cell space and
-  -- triggers a horizontal scrollbar too. The weekday header sits in a
-  -- column of the same outer width so its cells share a left edge with
-  -- the grid cells below it.
-  local GRID_WIDTH   = CELL_SIZE * 7 + 4 * 6
-  local GRID_HEIGHT  = (CELL_SIZE + 28) * 6 + 20
-  local SCROLL_WIDTH = GRID_WIDTH + 20
+  -- The scrolled view needs extra horizontal room for its scrollbar
+  -- gutter on the right; we add matching leading space on the left so
+  -- the grid doesn't hug the inner edge. The weekday header sits in a
+  -- column of the same outer width and shares the same leading pad so
+  -- its cells line up column-for-column with the grid cells below.
+  local GRID_WIDTH    = CELL_SIZE * 7 + 4 * 6
+  local GRID_HEIGHT   = (CELL_SIZE + 28) * 6 + 20
+  local GRID_LEADING  = 16
+  local GRID_TRAILING = 20  -- scrollbar gutter
+  local SCROLL_WIDTH  = GRID_WIDTH + GRID_LEADING + GRID_TRAILING
 
   if state.view == "missing" then
     children[#children + 1] = f:separator { fill_horizontal = 1 }
@@ -373,13 +375,19 @@ function M.build(state, properties)
     children[#children + 1] = centered(f:column {
       spacing = 4,
       width = SCROLL_WIDTH,
-      M._weekdayHeader(f),
+      f:row {
+        margin_left = GRID_LEADING,
+        M._weekdayHeader(f),
+      },
       f:scrolled_view {
         -- Cells include a "Day N" label beneath the thumbnail, so the
         -- vertical footprint grows by ~24px per row (label + spacing).
         width  = SCROLL_WIDTH,
         height = GRID_HEIGHT,
-        M._grid(f, state.cells, state.firstWeekday),
+        f:row {
+          margin_left = GRID_LEADING,
+          M._grid(f, state.cells, state.firstWeekday),
+        },
       },
     })
   end
