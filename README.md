@@ -5,8 +5,6 @@ collection: thumbnails and day-number labels on days you shot, empty cells on
 days you didn't. It helps photographers in a 365 Project see their missing
 days at a glance.
 
-![365 Calendar dialog showing a month grid of photo thumbnails](img/Screenshot.jpeg)
-
 ## Install
 
 1. Download `365Calendar-<version>.lrplugin.zip` from the
@@ -18,16 +16,41 @@ days at a glance.
 
 ## Use
 
-1. In the Library module, select the collection you want to view —
-   regular or smart. Pick it in the Collections panel in the left-hand
-   inspector before opening the plugin, or switch to it later from the
-   dropdown in the plugin's top bar. Smart collections appear in the
-   dropdown with a trailing `[smart]` marker; selecting from the
-   inspector is often quicker for nested collections.
-2. `Library > Plug-in Extras > Show 365 Calendar`. The dialog opens on
-   whatever collection is currently selected in the inspector (falling
-   back to the first collection if none is).
-3. Navigate months with `<` / `>`. `Refresh` reloads the active collection.
+### 1. Pick a collection and open the plugin
+
+In the Library module, select the collection you want to view — regular
+or smart. Pick it in the Collections panel in the left-hand inspector
+before opening the plugin, or switch to it later from the dropdown in
+the plugin's top bar. Smart collections appear in the dropdown with a
+trailing `[smart]` marker.
+
+Open the plugin from `Library > Plug-in Extras > Show 365 Calendar`:
+
+<img src="img/How%20To%20Launch.jpeg" alt="Library menu showing Plug-in Extras > Show 365 Calendar" width="700">
+
+The dialog opens on whatever collection is currently selected in the
+inspector (falling back to the first collection if none is).
+
+### 2. Calendar view
+
+The Calendar view is a month grid: thumbnails on days with photos,
+empty cells on days without. Each present-day cell carries a `Day N`
+label counting from the collection's earliest photo. Navigate with `<`
+/ `>` (the `>` button disables once you reach the current month).
+`Refresh` reloads the active collection.
+
+<img src="img/365%20Project%20LR%20Plugin%20Calendar.jpeg" alt="Calendar view with photo thumbnails and Day N labels on days with photos, empty cells on days without" width="520">
+
+### 3. Missing view
+
+Click `Missing` to swap the grid for a chronological list of every
+date without a photo between your earliest photo and today. Entries
+are grouped under a bold year heading and formatted `MMM D (Day N)`,
+with a `N missing` count at the top.
+
+<img src="img/365%20Project%20LR%20Plugin%20Missing.jpeg" alt="Missing view listing dates without photos grouped by year" width="520">
+
+---
 
 Quarter-view and year-view layouts, and click interactions on cells,
 are not supported — see `CLAUDE.md` for scope.

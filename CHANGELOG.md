@@ -14,6 +14,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Calendar grid now has leading edge padding that visually balances the existing trailing gutter reserved for the vertical scrollbar.
 
+### Changed
+
+- README now includes a short how-to guide with screenshots of plugin launch, Calendar view, and Missing view.
+
 ## [1.1.0] - 2026-04-22
 
 ### Added
